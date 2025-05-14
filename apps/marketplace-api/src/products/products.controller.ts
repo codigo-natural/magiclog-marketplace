@@ -83,8 +83,7 @@ export class ProductsController {
   })
   @ApiResponse({
     status: 403,
-    description:
-      'No tiene permisos para crear productos - Se requiere rol SELLER o ADMIN',
+    description: 'No tiene permisos para crear productos - Se requiere rol SELLER o ADMIN',
     schema: {
       example: {
         statusCode: 403,
@@ -138,8 +137,7 @@ export class ProductsController {
   })
   @ApiResponse({
     status: 403,
-    description:
-      'No tiene permisos para ver sus productos - Se requiere rol SELLER',
+    description: 'No tiene permisos para ver sus productos - Se requiere rol SELLER',
     schema: {
       example: {
         statusCode: 403,
@@ -157,8 +155,7 @@ export class ProductsController {
 
   @ApiOperation({
     summary: 'Buscar productos',
-    description:
-      'Busca productos según criterios de búsqueda. No requiere autenticación.',
+    description: 'Busca productos según criterios de búsqueda. No requiere autenticación.',
   })
   @ApiQuery({
     name: 'name',
@@ -190,8 +187,7 @@ export class ProductsController {
   })
   @ApiResponse({
     status: 200,
-    description:
-      'Lista de productos que coinciden con los criterios de búsqueda',
+    description: 'Lista de productos que coinciden con los criterios de búsqueda',
     schema: {
       example: [
         {
@@ -305,8 +301,7 @@ export class ProductsController {
   })
   @ApiResponse({
     status: 403,
-    description:
-      'No tiene permisos para ver todos los productos - Se requiere rol ADMIN',
+    description: 'No tiene permisos para ver todos los productos - Se requiere rol ADMIN',
     schema: {
       example: {
         statusCode: 403,

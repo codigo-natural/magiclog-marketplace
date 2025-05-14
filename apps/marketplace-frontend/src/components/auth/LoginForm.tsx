@@ -29,25 +29,25 @@ export const LoginForm: React.FC = () => {
   const dispatch = useAppDispatch()
   const { isLoading, error } = useAppSelector((state) => state.auth)
 
-  const from = location.state?.from?.pathname || '/' // Redirigir a la página anterior o a home
+  const from = location.state?.from?.pathname || '/'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     dispatch(loginRequest())
     try {
-      const response = await apiClient.post<{ accessToken: string }>(
+      const response = await apiClient.post<{ accesToken: string }>(
         '/auth/login',
         { email, password }
       )
-      const { accessToken } = response.data
-      const decodedToken = jwtDecode<DecodedToken>(accessToken) // Decodificar token para obtener rol y email
+      const { accesToken } = response.data
+      const decodedToken = jwtDecode<DecodedToken>(accesToken) // Decodificar token para obtener rol y email
       const userPayload = {
         id: decodedToken.sub,
         email: decodedToken.email,
         role: decodedToken.role,
       }
 
-      dispatch(loginSuccess({ token: accessToken, user: userPayload }))
+      dispatch(loginSuccess({ token: accesToken, user: userPayload }))
       // Redirigir según el rol
       if (decodedToken.role === 'admin') {
         navigate('/admin/dashboard', { replace: true })

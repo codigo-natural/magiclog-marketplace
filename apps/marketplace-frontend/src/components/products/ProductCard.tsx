@@ -1,15 +1,5 @@
 import React from 'react'
-
-export interface Product {
-  // ! Mover esta interfaz a un archivo compartido  (src/types/pruct.ts)
-  id: string
-  name: string
-  sku: string
-  quantity: number
-  price: number
-  seller?: { id: string; email: string } // ? opcional si lo devuelve desde el backend
-  // * createdAt, updateAt
-}
+import type { Product } from '../../types/products'
 
 interface ProductCardProps {
   product: Product
