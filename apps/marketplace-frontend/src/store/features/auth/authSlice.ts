@@ -1,9 +1,10 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
 
 interface AuthState {
   token: string | null;
   user: { id: string; email: string; role: string } | null;
-  isAutenticated: boolean;
+  isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
 }
@@ -26,7 +27,7 @@ const authSlice = createSlice({
     },
     loginSuccess: (state, action: PayloadAction<{ token: string; user: any }>) => { // ! tipar mejor
       state.isLoading = false;
-      state.isAutenticated = true;
+      state.isAuthenticated = true;
       state.token = action.payload.token;
       state.user = action.payload.user; // Necesitamos decodificar el token o que el backend envie info del user
       localStorage.setItem('token', action.payload.token);
@@ -39,7 +40,7 @@ const authSlice = createSlice({
     logout: (state) => {
       state.token = null;
       state.user = null;
-      state.isAutenticated = false;
+      state.isAuthenticated = false;
       localStorage.removeItem('token');
     },
     // ? RegisterRequest, registerSucces, registerFailures

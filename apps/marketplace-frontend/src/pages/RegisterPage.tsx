@@ -1,7 +1,11 @@
 import React from 'react'
+import { RegisterForm } from '../components/auth/RegisterForm'
 
-export const RegisterPage :React.FC = () => {
+export const RegisterPage: React.FC = () => {
   return (
-    <div>RegisterPage</div>
+    <div className='min-h-screen flex flex-col items-center justify-center bg-gray-100'>
+      <RegisterForm />
+      {/* Podrías añadir un enlace a Login aquí */}
+    </div>
   )
 }
