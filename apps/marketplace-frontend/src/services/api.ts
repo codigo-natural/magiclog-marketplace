@@ -8,7 +8,6 @@ const apiClient = axios.create({
   },
 });
 
-// Interceptor para añadir el token JWT a las peticiones
 apiClient.interceptors.request.use(
   (config) => {
     const token = store.getState().auth.token;

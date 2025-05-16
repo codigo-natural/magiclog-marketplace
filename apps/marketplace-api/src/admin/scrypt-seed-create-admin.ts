@@ -1,5 +1,3 @@
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { User } from 'src/users/user.entity';
 import { UserRole } from 'src/common/enums/role.enum';
 import * as bcrypt from 'bcrypt';
 
@@ -20,7 +18,3 @@ export async function seedAdmin(userRepository) {
     console.log('Admin User created');
   }
 }
-
-/**
- * Una forma mas robusta es usar migraciones y seed de TypeORM
- */

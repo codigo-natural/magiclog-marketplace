@@ -5,5 +5,4 @@ export interface Product {
   quantity: number
   price: number
   seller?: { id: string; email: string }
-  // * createdAt, updateAt
 }

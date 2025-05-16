@@ -30,7 +30,7 @@ export class SearchProductQueryDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
-  @Type(() => Number) // Transforma el string de la query a número
+  @Type(() => Number)
   minPrice?: number;
 
   @ApiProperty({
@@ -42,6 +42,6 @@ export class SearchProductQueryDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
-  @Type(() => Number) // Transforma el string de la query a número
+  @Type(() => Number)
   maxPrice?: number;
 }

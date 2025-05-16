@@ -18,10 +18,12 @@ describe('ProductsController', () => {
   };
 
   const mockUser: User = {
-    id: '1',
+    id: 'some-uuid',
     email: 'test@example.com',
-    password: 'hashedPassword',
+    passwordHash: 'someHashedPassword123',
     role: UserRole.SELLER,
+    createdAt: new Date(),
+    updatedAt: new Date(),
     products: [],
   };
 

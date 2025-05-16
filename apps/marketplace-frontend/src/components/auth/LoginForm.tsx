@@ -5,6 +5,7 @@ import {
   loginFailure,
   loginRequest,
   loginSuccess,
+  type UserState,
 } from '../../store/features/auth/authSlice'
 import apiClient from '../../services/api'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -22,8 +23,6 @@ interface DecodedToken {
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  // const [error, setError] = useState<string | null>(null); // El error se manejará en el slice de Redux
-  // const [isLoading, setIsLoading] = useState(false); // El loading se manejará en el slice de Redux
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useAppDispatch()
@@ -40,15 +39,14 @@ export const LoginForm: React.FC = () => {
         { email, password }
       )
       const { accesToken } = response.data
-      const decodedToken = jwtDecode<DecodedToken>(accesToken) // Decodificar token para obtener rol y email
-      const userPayload = {
+      const decodedToken = jwtDecode<DecodedToken>(accesToken) 
+      const userPayload : UserState = {
         id: decodedToken.sub,
         email: decodedToken.email,
         role: decodedToken.role,
       }
 
       dispatch(loginSuccess({ token: accesToken, user: userPayload }))
-      // Redirigir según el rol
       if (decodedToken.role === 'admin') {
         navigate('/admin/dashboard', { replace: true })
       } else if (decodedToken.role === 'seller') {

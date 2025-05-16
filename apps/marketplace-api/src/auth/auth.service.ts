@@ -47,7 +47,7 @@ export class AuthService {
     const newUser = this.userRepository.create({
       email,
       passwordHash,
-      role: UserRole.SELLER, // por default vendedor
+      role: UserRole.SELLER,
     });
 
     try {

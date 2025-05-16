@@ -6,7 +6,8 @@ import { User } from '../users/user.entity';
 import { CreateProductDTo } from './dto/create-product.dto';
 import { SearchProductQueryDto } from './dto/search-product-query.dto';
 import { UserRole } from '../common/enums/role.enum';
-import { Repository } from 'typeorm';
+import { Repository, Like, Between, FindManyOptions } from 'typeorm';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -17,26 +18,28 @@ describe('ProductsService', () => {
     save: jest.fn(),
     find: jest.fn(),
     findOne: jest.fn(),
-    createQueryBuilder: jest.fn(() => ({
-      where: jest.fn().mockReturnThis(),
-      andWhere: jest.fn().mockReturnThis(),
-      getMany: jest.fn(),
-    })),
   };
 
-  const mockUser: Partial<User> = {
+  const mockUser: User = {
     id: '1',
     email: 'test@example.com',
     role: UserRole.SELLER,
+    passwordHash: 'hashed',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    products: [],
   };
 
-  const mockProduct = {
+  const mockProduct: Product = {
     id: '1',
     name: 'Test Product',
     sku: 'TEST-123',
     quantity: 10,
     price: 99.99,
     seller: mockUser,
+    sellerId: mockUser.id,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
   beforeEach(async () => {
@@ -65,25 +68,46 @@ describe('ProductsService', () => {
   });
 
   describe('create', () => {
-    it('should create a new product', async () => {
+    it('should create a new product if SKU does not exist', async () => {
       const createProductDto: CreateProductDTo = {
         name: 'Test Product',
-        sku: 'TEST-123',
+        sku: 'NEW-SKU-456',
         quantity: 10,
         price: 99.99,
       };
 
-      mockProductRepository.create.mockReturnValue(mockProduct);
-      mockProductRepository.save.mockResolvedValue(mockProduct);
+      mockProductRepository.findOne.mockResolvedValue(null);
+      const createdProductInstance = { ...createProductDto, seller: mockUser, sellerId: mockUser.id, id: 'new-id', createdAt: new Date(), updatedAt: new Date() };
+      mockProductRepository.create.mockReturnValue(createdProductInstance);
+      mockProductRepository.save.mockResolvedValue(createdProductInstance);
 
-      const result = await service.create(createProductDto, mockUser as User);
+      const result = await service.create(createProductDto, mockUser);
 
-      expect(result).toEqual(mockProduct);
+      expect(productRepository.findOne).toHaveBeenCalledWith({ where: { sku: createProductDto.sku } });
       expect(productRepository.create).toHaveBeenCalledWith({
         ...createProductDto,
         seller: mockUser,
+        sellerId: mockUser.id,
       });
-      expect(productRepository.save).toHaveBeenCalledWith(mockProduct);
+      expect(productRepository.save).toHaveBeenCalledWith(createdProductInstance);
+      expect(result).toEqual(createdProductInstance);
+    });
+
+    it('should throw ConflictException if product with SKU already exists', async () => {
+      const createProductDto: CreateProductDTo = {
+        name: 'Test Product',
+        sku: 'EXISTING-SKU-123',
+        quantity: 10,
+        price: 99.99,
+      };
+      mockProductRepository.findOne.mockResolvedValue(mockProduct);
+
+      await expect(service.create(createProductDto, mockUser)).rejects.toThrow(ConflictException);
+      await expect(service.create(createProductDto, mockUser)).rejects.toThrow(
+        `Ya existe un producto con el SKU: ${createProductDto.sku}`
+      );
+      expect(productRepository.create).not.toHaveBeenCalled();
+      expect(productRepository.save).not.toHaveBeenCalled();
     });
   });
 
@@ -96,61 +120,106 @@ describe('ProductsService', () => {
 
       expect(result).toEqual(mockProducts);
       expect(productRepository.find).toHaveBeenCalledWith({
-        where: { seller: { id: mockUser.id } },
+        where: {
+          sellerId: mockUser.id,
+        },
+        relations: ['seller'],
       });
     });
   });
 
+  describe('findAll', () => {
+    it('should return all products without sellerIdFilter', async () => {
+      const mockProducts = [mockProduct, { ...mockProduct, id: '2', sellerId: 'another-seller' }];
+      mockProductRepository.find.mockResolvedValue(mockProducts);
+      const result = await service.findAll();
+      expect(productRepository.find).toHaveBeenCalledWith({ relations: ['seller'] });
+      expect(result).toEqual(mockProducts);
+    });
+
+    it('should return products filtered by sellerId if provided', async () => {
+      const sellerIdFilter = 'specific-seller-id';
+      const mockFilteredProducts = [mockProduct];
+      mockProductRepository.find.mockResolvedValue(mockFilteredProducts);
+
+      const result = await service.findAll(sellerIdFilter);
+
+      expect(productRepository.find).toHaveBeenCalledWith({
+        where: { sellerId: sellerIdFilter },
+        relations: ['seller'],
+      });
+      expect(result).toEqual(mockFilteredProducts);
+    });
+  });
+
+
   describe('search', () => {
+    const mockSearchResult: Product[] = [mockProduct];
+
+    beforeEach(() => {
+      (productRepository.find as jest.Mock).mockResolvedValue(mockSearchResult);
+    });
+
     it('should search products with all criteria', async () => {
-      const searchQuery: SearchProductQueryDto = {
+      const query: SearchProductQueryDto = {
         name: 'Test',
-        sku: 'TEST',
-        minPrice: 50,
+        sku: 'SKU1',
+        minPrice: 10,
         maxPrice: 100,
       };
 
-      const mockProducts = [mockProduct];
-      const mockQueryBuilder = {
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue(mockProducts),
-      };
+      const result = await service.search(query);
 
-      mockProductRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder,
-      );
-
-      const result = await service.search(searchQuery);
-
-      expect(result).toEqual(mockProducts);
-      expect(mockQueryBuilder.where).toHaveBeenCalled();
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledTimes(3);
-      expect(mockQueryBuilder.getMany).toHaveBeenCalled();
+      expect(result).toEqual(mockSearchResult);
+      expect(productRepository.find).toHaveBeenCalledWith({
+        where: {
+          name: Like('%Test%'),
+          sku: Like('%SKU1%'),
+          price: Between(10, 100),
+        },
+        relations: ['seller'],
+      });
     });
 
-    it('should search products with partial criteria', async () => {
-      const searchQuery: SearchProductQueryDto = {
-        name: 'Test',
-      };
+    it('should search products with partial criteria (only name)', async () => {
+      const query: SearchProductQueryDto = { name: 'Laptop' };
 
-      const mockProducts = [mockProduct];
-      const mockQueryBuilder = {
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        getMany: jest.fn().mockResolvedValue(mockProducts),
-      };
+      const result = await service.search(query);
 
-      mockProductRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder,
-      );
+      expect(result).toEqual(mockSearchResult);
+      expect(productRepository.find).toHaveBeenCalledWith({
+        where: {
+          name: Like('%Laptop%'),
+        },
+        relations: ['seller'],
+      });
+    });
 
-      const result = await service.search(searchQuery);
+    it('should handle minPrice only', async () => {
+      const query: SearchProductQueryDto = { minPrice: 50 };
+      await service.search(query);
+      expect(productRepository.find).toHaveBeenCalledWith({
+        where: { price: Between(50, Number.MAX_SAFE_INTEGER) },
+        relations: ['seller'],
+      });
+    });
 
-      expect(result).toEqual(mockProducts);
-      expect(mockQueryBuilder.where).toHaveBeenCalled();
-      expect(mockQueryBuilder.andWhere).not.toHaveBeenCalled();
-      expect(mockQueryBuilder.getMany).toHaveBeenCalled();
+    it('should handle maxPrice only', async () => {
+      const query: SearchProductQueryDto = { maxPrice: 200 };
+      await service.search(query);
+      expect(productRepository.find).toHaveBeenCalledWith({
+        where: { price: Between(0, 200) },
+        relations: ['seller'],
+      });
+    });
+
+    it('should handle empty query by returning all products', async () => {
+      const query: SearchProductQueryDto = {};
+      await service.search(query);
+      expect(productRepository.find).toHaveBeenCalledWith({
+        where: {},
+        relations: ['seller'],
+      });
     });
   });
 
@@ -164,19 +233,18 @@ describe('ProductsService', () => {
       expect(result).toEqual(mockProduct);
       expect(productRepository.findOne).toHaveBeenCalledWith({
         where: { id: productId },
+        relations: ['seller'],
       });
     });
 
-    it('should return null for non-existent product', async () => {
+    it('should throw NotFoundException for non-existent product', async () => {
       const productId = '999';
-      mockProductRepository.findOne.mockResolvedValue(null);
+      (productRepository.findOne as jest.Mock).mockResolvedValue(null);
 
-      const result = await service.findOne(productId);
-
-      expect(result).toBeNull();
-      expect(productRepository.findOne).toHaveBeenCalledWith({
-        where: { id: productId },
-      });
+      await expect(service.findOne(productId)).rejects.toThrow(NotFoundException);
+      await expect(service.findOne(productId)).rejects.toThrow(
+        `Producto con ID "${productId}" no encontrado.`,
+      );
     });
   });
 });

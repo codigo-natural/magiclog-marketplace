@@ -13,11 +13,11 @@ export class RolesGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
     if (!requiredRoles) {
-      return true; // Si no se especifican roles, se permite el acceso (asumiendo que JwtAuthGuard ya pasó)
+      return true;
     }
     const { user } = context.switchToHttp().getRequest();
     if (!user || !user.role) {
-      return false; // No hay usuario o no tiene rol
+      return false;
     }
     return requiredRoles.some((role) => user.role === role);
   }

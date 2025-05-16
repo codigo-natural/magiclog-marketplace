@@ -1,73 +1,87 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import apiClient from '../../services/api'
 import { Input } from '../ui/Input'
 import { Button } from '../ui/Button'
+import { useAppDispatch, useAppSelector } from '../../store/hooks'
+import {
+  createProduct,
+  clearProductsError,
+} from '../../store/features/products/productsSlice'
+
+interface ProductDataPayload {
+  name: string
+  sku: string
+  quantity: number
+  price: number
+}
 
 export const CreateProductForm: React.FC = () => {
   const [name, setName] = useState('')
   const [sku, setSku] = useState('')
-  const [quantity, setQuantity] = useState('') // String para el input, se convertirá a número
-  const [price, setPrice] = useState('') // String para el input
-  const [error, setError] = useState<string | null>(null)
+  const [quantity, setQuantity] = useState('')
+  const [price, setPrice] = useState('')
+  const [formValidationError, setFormValidationError] = useState<string | null>(
+    null
+  )
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+
+  const dispatch = useAppDispatch()
+  const { isLoading, error: apiError } = useAppSelector(
+    (state) => state.products
+  )
   const navigate = useNavigate()
+
+  useEffect(() => {
+    return () => {
+      dispatch(clearProductsError())
+    }
+  }, [dispatch])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
+    setFormValidationError(null)
     setSuccessMessage(null)
+    dispatch(clearProductsError())
 
     if (!name || !sku || !quantity || !price) {
-      setError('Todos los campos son obligatorios.')
+      setFormValidationError('Todos los campos son obligatorios.')
       return
     }
     const numQuantity = parseInt(quantity, 10)
     const numPrice = parseFloat(price)
 
     if (isNaN(numQuantity) || numQuantity < 0) {
-      setError('La cantidad debe ser un número no negativo.')
+      setFormValidationError('La cantidad debe ser un número no negativo.')
       return
     }
     if (isNaN(numPrice) || numPrice <= 0) {
-      setError('El precio debe ser un número positivo.')
+      setFormValidationError('El precio debe ser un número positivo.')
       return
     }
 
-    setIsLoading(true)
-
-    try {
-      await apiClient.post('/products', {
-        name,
-        sku,
-        quantity: numQuantity,
-        price: numPrice,
-      })
-      setSuccessMessage('Producto creado exitosamente!')
-      // Limpiar formulario
-      setName('')
-      setSku('')
-      setQuantity('')
-      setPrice('')
-      // Opcional: redirigir a la lista de productos del vendedor
-      navigate('/seller/products/me')
-    } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.message || 'Error al crear el producto.'
-      if (Array.isArray(errorMessage)) {
-        // NestJS class-validator puede devolver un array
-        setError(errorMessage.join(', '))
-      } else {
-        setError(errorMessage)
-      }
-      console.error(
-        'Error creando producto:',
-        err.response?.data || err.message
-      )
-    } finally {
-      setIsLoading(false)
+    const productData: ProductDataPayload = {
+      name,
+      sku,
+      quantity: numQuantity,
+      price: numPrice,
     }
+
+    // Despachar la acción asincrona
+    dispatch(createProduct(productData))
+      .unwrap()
+      .then(() => {
+        setSuccessMessage('Product creado exitosamente!')
+        setName('')
+        setSku('')
+        setQuantity('')
+        setPrice('')
+        setTimeout(() => {
+          navigate('/seller/products/me')
+        }, 1500)
+      })
+      .catch((err) => {
+        console.error('Error al crear producto: ', err)
+      })
   }
 
   return (
@@ -78,8 +92,15 @@ export const CreateProductForm: React.FC = () => {
       <h2 className='text-2xl font-bold text-center text-gray-800'>
         Crear Nuevo Producto
       </h2>
-      {error && (
-        <p className='text-red-500 text-sm bg-red-100 p-3 rounded'>{error}</p>
+      {formValidationError && (
+        <p className='text-red-500 text-sm bg-red-100 p-3 rounded'>
+          {formValidationError}
+        </p>
+      )}
+      {apiError && !formValidationError && (
+        <p className='text-red-500 text-sm bg-red-100 p-3 rounded'>
+          {Array.isArray(apiError) ? apiError.join(', ') : apiError}
+        </p>
       )}
       {successMessage && (
         <p className='text-green-600 text-sm bg-green-100 p-3 rounded'>

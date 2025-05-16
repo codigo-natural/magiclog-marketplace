@@ -17,7 +17,7 @@ export class Product {
   @Column()
   name: string;
 
-  @Column({ unique: true }) // SKU suele ser unico
+  @Column({ unique: true })
   sku: string;
 
   @Column({ type: 'integer' })
@@ -41,5 +41,5 @@ export class Product {
   seller: User;
 
   @Column() // Columna explicita para la FK para facilitar queries
-  sellerID: string;
+  sellerId: string;
 }

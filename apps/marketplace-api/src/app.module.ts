@@ -23,7 +23,7 @@ import { AdminModule } from './admin/admin.module';
         database: configService.get<string>('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'], // carga automaticamente las entidades
         synchronize: true, // true en desarrollo (crea tablas automaticamente), false en producción
-        logging: true, // para ver las queries SQL en consola (útil en desarrollo)
+        logging: false, // para ver las queries SQL en consola (útil en desarrollo)
       }),
     }),
     AuthModule,

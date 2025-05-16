@@ -24,7 +24,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
       errorResponse !== null &&
       'message' in errorResponse
     ) {
-      // para errores ce class-validator, 'message' puede ser un array
       message = Array.isArray((errorResponse as any).message)
         ? (errorResponse as any).message.join(', ')
         : (errorResponse as any).message;

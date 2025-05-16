@@ -1,6 +1,3 @@
-// import { useAppDispatch } from '../../store/hooks'; // Si vas a despachar acciones de registro
-// import { registerRequest, registerSuccess, registerFailure } from '../../store/features/auth/authSlice';
-
 import type React from 'react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -15,7 +12,6 @@ export const RegisterForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
-  // const dispatch = useAppDispatch();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,19 +25,14 @@ export const RegisterForm: React.FC = () => {
       setError('La contraseña debe tener al menos 8 caracteres.')
       return
     }
-    // Validaciones más complejas de contraseña aquí si es necesario
 
     setIsLoading(true)
-    // dispatch(registerRequest()); // Si usas Redux
     try {
       const response = await apiClient.post('/auth/register', {
         email,
         password,
         confirmPassword,
       })
-      // dispatch(registerSuccess(response.data)); // Si usas Redux y el backend devuelve info útil
-      console.log('Registro exitoso:', response.data)
-      // Aquí podrías hacer login automático o redirigir a login
       navigate('/login', {
         state: { message: 'Registro exitoso. Por favor, inicia sesión.' },
       })
@@ -50,7 +41,6 @@ export const RegisterForm: React.FC = () => {
         err.response?.data?.message ||
         'Error en el registro. Inténtalo de nuevo.'
       setError(errorMessage)
-      // dispatch(registerFailure(errorMessage)); // Si usas Redux
       console.error('Error en registro:', err.response?.data || err.message)
     } finally {
       setIsLoading(false)

@@ -6,7 +6,7 @@ export interface SearchParams {
   name?: string
   sku?: string
   minPrice?: number
-  maxPrice: number
+  maxPrice?: number
 }
 
 interface ProductSearchProps {

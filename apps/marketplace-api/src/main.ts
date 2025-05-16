@@ -9,29 +9,31 @@ import { User } from './users/user.entity';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  app.enableCors({
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Accept, Authorization',
+    credentials: true,
+  });
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Remueve propiedade no definidas en el DTO
-      forbidNonWhitelisted: true, // Lanza error si hay propiedades no definidas
-      transform: true, // Transforma payload a instancias de DTO
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
       transformOptions: {
-        enableImplicitConversion: true, // Permite conversión implicita de tipos (ej. string de query a number)
+        enableImplicitConversion: true,
       },
     }),
   );
-  app.useGlobalFilters(new HttpExceptionFilter()); // Aplicar filtro global
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   const config = new DocumentBuilder()
     .setTitle('API marketplace')
-    .setDescription(
-      'Documentación de la API para la prueba técnica de marketplace',
-    )
+    .setDescription('Documentación de la API para la prueba técnica de marketplace')
     .setVersion('1.0')
     .addBearerAuth() // para endpoints protejidos con JWT
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, document); // La UI de Swagger estará en /api-docs
+  SwaggerModule.setup('api-docs', app, document);
 
   const userRepository = app.get(getRepositoryToken(User));
   await seedAdmin(userRepository);

@@ -18,10 +18,7 @@ export class ProductsService {
     private productRepository: Repository<Product>,
   ) { }
 
-  async create(
-    createProductDto: CreateProductDTo,
-    seller: User,
-  ): Promise<Product> {
+  async create(createProductDto: CreateProductDTo, seller: User): Promise<Product> {
     const { name, sku, quantity, price } = createProductDto;
 
     // verificar si ya existe un producto con el mismo SKU
@@ -37,7 +34,7 @@ export class ProductsService {
       sku,
       quantity,
       price,
-      sellerID: seller.id, // Asocia el producto al vendedor
+      sellerId: seller.id, // Asocia el producto al vendedor
       seller: seller,
     });
 
@@ -49,19 +46,19 @@ export class ProductsService {
     }
   }
 
-  async findOwn(sellerID: string): Promise<Product[]> {
+  async findOwn(sellerId: string): Promise<Product[]> {
     return this.productRepository.find({
-      where: { sellerID },
-      relations: ['seller'], // Opcional cargar datos del vendedor
+      where: { sellerId },
+      relations: ['seller'],
     });
   }
 
   async findAll(sellerIdFilter?: string): Promise<Product[]> {
     const options: FindManyOptions<Product> = {
-      relations: ['seller'], // Cargar datos del vendedor
+      relations: ['seller'],
     };
     if (sellerIdFilter) {
-      options.where = { sellerID: sellerIdFilter };
+      options.where = { sellerId: sellerIdFilter };
     }
     return this.productRepository.find(options);
   }
@@ -71,22 +68,22 @@ export class ProductsService {
     const whereConditions: any = {};
 
     if (name) {
-      whereConditions.name = Like(`%${name}`);
+      whereConditions.name = Like(`%${name}%`);
     }
     if (sku) {
-      whereConditions.sku = Like(`%${sku}`);
+      whereConditions.sku = Like(`%${sku}%`);
     }
     if (minPrice !== undefined && maxPrice !== undefined) {
       whereConditions.price = Between(minPrice, maxPrice);
     } else if (minPrice !== undefined) {
-      whereConditions.price = Between(minPrice, Number.MAX_SAFE_INTEGER); // o un valor muy alto
+      whereConditions.price = Between(minPrice, Number.MAX_SAFE_INTEGER);
     } else if (maxPrice !== undefined) {
       whereConditions.price = Between(0, maxPrice);
     }
 
     return this.productRepository.find({
       where: whereConditions,
-      relations: ['seller'], // Opcional, para mostrar info del vendedor
+      relations: ['seller'],
     });
   }
 
