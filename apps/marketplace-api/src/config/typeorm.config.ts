@@ -19,6 +19,11 @@ export const getTypeOrmConfig = (configService?: ConfigService): TypeOrmModuleOp
   const migrationsPathForCli = [join(process.cwd(), 'dist', 'db', 'migrations', '*{.js,.ts}')];
   const migrationsPathForApp = [join(__dirname, '..', '..', 'db', 'migrations', '*{.js,.ts}')];
 
+  const migrationsPath =
+    console.log(`[DB_CONFIG_RENDER] Service Name: ${configService.get<string>('RENDER_SERVICE_NAME', 'N/A')}`);
+  console.log(`[DB_CONFIG_RENDER] NODE_ENV: ${nodeEnv}`);
+  console.log(`[DB_CONFIG_RENDER] Migrations Run Expected: ${nodeEnv === 'production'}`);
+  console.log(`[DB_CONFIG_RENDER] Actual Migrations Path for App: ${migrationsPath}`);
 
   return {
     type: 'postgres',
