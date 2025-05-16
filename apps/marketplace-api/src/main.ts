@@ -6,10 +6,13 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { seedAdmin } from './admin/scrypt-seed-create-admin';
 import { User } from './users/user.entity';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService)
   app.enableCors({
+    origin: configService.get<string>('FRONTEND_URL') || 'http://localhost:5173',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Accept, Authorization',
     credentials: true,
@@ -38,7 +41,7 @@ async function bootstrap() {
   const userRepository = app.get(getRepositoryToken(User));
   await seedAdmin(userRepository);
 
-  await app.listen(process.env.PORT || 3000);
+  await app.listen(configService.get<number>('PORT') || 3000);
   console.log(`Application is running on: ${await app.getUrl()}`);
   console.log(`Swagger docs available at: ${await app.getUrl()}/api-docs`);
 }

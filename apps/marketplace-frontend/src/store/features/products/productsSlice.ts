@@ -54,9 +54,13 @@ export const createProduct = createAsyncThunk(
   }
 );
 
-export const fetchAllProductsAdmin = createAsyncThunk(
+export const fetchAllProductsAdmin = createAsyncThunk<
+  Product[],
+  string | undefined,
+  { rejectValue: string }
+>(
   'products/fetchAllProductsAdmin',
-  async (sellerIdFilter?: string, { rejectWithValue }) => {
+  async (sellerIdFilter, { rejectWithValue }) => {
     try {
       let url = '/admin/products';
       if (sellerIdFilter) {
@@ -114,6 +118,7 @@ const productsSlice = createSlice({
       })
       .addCase(createProduct.fulfilled, (state, action: PayloadAction<Product>) => {
         state.isLoading = false;
+        state.ownItems.push(action.payload);
       })
       .addCase(createProduct.rejected, (state, action) => {
         state.isLoading = false;

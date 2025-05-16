@@ -28,7 +28,7 @@ export const RegisterForm: React.FC = () => {
 
     setIsLoading(true)
     try {
-      const response = await apiClient.post('/auth/register', {
+      await apiClient.post('/auth/register', {
         email,
         password,
         confirmPassword,

@@ -21,8 +21,13 @@ import { AdminModule } from './admin/admin.module';
         username: configService.get<string>('DB_USER'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'], // carga automaticamente las entidades
-        synchronize: true, // true en desarrollo (crea tablas automaticamente), false en producción
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: configService.get<string>('NODE_ENV') !== 'production',
+        migrationsRun: configService.get<string>('NODE_ENV') === 'production',
+        migrations: [__dirname + '/../db/migrations/*{.ts,.js}'],
+        ssl: configService.get<string>('NODE_ENV') === 'production'
+          ? { rejectUnauthorized: false } // Necesario para algunas conexiones SSL de Render/Heroku
+          : false,
         logging: false, // para ver las queries SQL en consola (útil en desarrollo)
       }),
     }),
@@ -34,4 +39,4 @@ import { AdminModule } from './admin/admin.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
