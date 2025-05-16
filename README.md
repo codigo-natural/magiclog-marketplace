@@ -102,7 +102,7 @@ Este es un monorepo que contiene dos aplicaciones principales:
 git clone https://github.com/codigo-natural/magiclog-marketplace.git
 cd magiclog-marketplace
 ```
-2. Configuración del Backend (API)
+### 2. Configuración del Backend (API)
 
 Navega al directorio del backend:
 ```Bash
@@ -141,7 +141,7 @@ Desde el directorio `apps/marketplace-api/` (donde está tu `docker-compose.yml`
 `docker-compose up -d`
 
 
-3. Configuración del Frontend
+### 3. Configuración del Frontend
 
 Navega al directorio del frontend:
 ```bash
@@ -163,11 +163,11 @@ VITE_API_BASE_URL=http://localhost:3000
 
 Asegúrate de que http://localhost:3000 coincida con el puerto donde se ejecuta tu backend API.
 
-**Ejecución**
+# **Ejecución**
 
 Abre dos terminales separadas.
 
-Backend (API)
+## Backend (API)
 
 Desde el directorio `apps/marketplace-api/`:
 
@@ -184,7 +184,7 @@ Modo Producción:
 npm run build
 npm run start:prod
 ```
-**Frontend**
+## **Frontend**
 
 Desde el directorio `apps/marketplace-frontend/`:
 
@@ -196,12 +196,12 @@ npm run dev
 
 La aplicación frontend estará disponible generalmente en http://localhost:5173 (Vite te indicará el puerto exacto).
 
-**Documentación de la API**
+## **Documentación de la API**
 
 Una vez que el servidor backend (marketplace-api) esté en ejecución, la documentación de la API generada con Swagger estará disponible en:
 http://localhost:3000/api-docs
 
-Roles de Usuario
+# Roles de Usuario
 
 - **ADMIN (admin):** Acceso completo a la plataforma, incluyendo la visualización de todos los productos y la lista de vendedores.
 
@@ -211,7 +211,7 @@ Roles de Usuario
 
 - **Comprador (implícito):** Cualquier usuario (autenticado o no, que no sea vendedor o admin) puede buscar productos y añadirlos al carrito.
 
-**Pruebas (Backend)**
+# **Pruebas (Backend)**
 
 Desde el directorio `apps/marketplace-api/`:
 
@@ -230,5 +230,14 @@ npm run test:cov
 npm run test:watch
 ```
 
-URL de la aplicación desplegada en Vercel: 
+# **Despliegue**
 
+> URL de la aplicación desplegada en Vercel: https://magiclog-marketplace-marketplace-frontend.vercel.app/
+
+> URL de la documentacion de la API desplegada en [render](https://render.com/): https://magiclog-marketplace.onrender.com/api-docs
+---
+> usuario administrador de prueba ya existente en base de datos
+
+|usruario | password | rol|
+--------- | -------- | ----
+admin@example.com | AdminPassword123! | Admin
