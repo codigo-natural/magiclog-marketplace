@@ -6,8 +6,8 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { UserRole } from 'src/common/enums/role.enum';
-import { Product } from 'src/products/product.entity';
+import { UserRole } from '../common/enums/role.enum';
+import { Product } from '../products/product.entity';
 
 @Entity('users')
 export class User {

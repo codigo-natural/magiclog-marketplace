@@ -2,7 +2,7 @@ import { DataSource, type DataSourceOptions } from 'typeorm';
 import { getTypeOrmConfig } from './src/config/typeorm.config';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'; // Importar el tipo específico
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 
 process.env.RUNNING_TYPEORM_CLI = 'true';
 dotenv.config({ path: join(process.cwd(), '.env') });
@@ -13,7 +13,7 @@ const cliDataSourceOptions: DataSourceOptions = {
   ...(baseDataSourceOptions as PostgresConnectionOptions),
 
   entities: [join(process.cwd(), 'src', '**', '*.entity.ts')],
-  migrations: [join(process.cwd(), 'dist', 'db', 'migrations', '*{.js,.ts}')],
+  migrations: [join(process.cwd(), 'dist', 'src', 'db', 'migrations', '*{.js,.ts}')],
 };
 
 if (!cliDataSourceOptions.host) {
